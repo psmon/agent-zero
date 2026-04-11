@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentZero — 윈도우 데스크톱 자동화 도구</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface-2: #1c2230;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --accent-2: #c586c0;
+      --green: #3fb950;
+      --cyan: #56d4dd;
+      --pink: #ff79c6;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      background: radial-gradient(ellipse at top, #15182a 0%, var(--bg) 60%);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+    .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+    /* Top language toggle */
+    .lang-bar {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px;
+      display: flex;
+      gap: 4px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .lang-bar button {
+      background: transparent;
+      border: 0;
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .lang-bar button.active {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+    .lang-bar button:hover:not(.active) { color: var(--text); }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 96px 0 56px;
+    }
+    .hero-mascot {
+      max-width: 220px;
+      margin: 0 auto 24px;
+      display: block;
+      filter: drop-shadow(0 8px 24px rgba(88, 166, 255, 0.25));
+    }
+    .hero h1 {
+      font-size: 3.2rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--pink) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 auto 36px;
+      line-height: 1.7;
+    }
+    .btn-download {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--green) 0%, #2ea043 100%);
+      color: #fff;
+      padding: 16px 36px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 20px rgba(63, 185, 80, 0.3);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(63, 185, 80, 0.4);
+    }
+    .version-info {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .version-info a { color: var(--accent); text-decoration: none; }
+    .version-info a:hover { text-decoration: underline; }
+
+    /* Feature sections */
+    .feature-section {
+      padding: 56px 0;
+      border-top: 1px solid var(--border);
+    }
+    .feature-section h2 {
+      font-size: 1.7rem;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .feature-section .subtitle {
+      color: var(--muted);
+      font-size: 1.02rem;
+      margin-bottom: 24px;
+    }
+    .feature-section img {
+      max-width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      margin: 16px 0;
+      background: var(--surface);
+    }
+    .feature-section ul {
+      color: var(--muted);
+      padding-left: 20px;
+      font-size: 0.98rem;
+    }
+    .feature-section ul li { margin-bottom: 8px; }
+    .feature-section ul li strong { color: var(--text); }
+
+    /* Two-column feature */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 16px;
+    }
+    @media (max-width: 700px) {
+      .two-col { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 2.4rem; }
+      .hero-mascot { max-width: 160px; }
+    }
+    .two-col img {
+      max-width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+
+    /* Quick features grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      padding: 32px 0;
+    }
+    .fcard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .fcard:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .fcard h3 { font-size: 1.05rem; margin-bottom: 8px; }
+    .fcard p { color: var(--muted); font-size: 0.92rem; line-height: 1.6; }
+
+    /* Release news */
+    .release-news {
+      padding: 56px 0 8px;
+      border-top: 1px solid var(--border);
+    }
+    .release-news h2 { font-size: 1.7rem; margin-bottom: 8px; letter-spacing: -0.01em; }
+    .release-news .subtitle { color: var(--muted); font-size: 1.02rem; margin-bottom: 24px; }
+    .release-news .news-list {
+      display: grid;
+      gap: 14px;
+    }
+    .release-news .news-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 12px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .release-news .news-item:hover {
+      border-left-color: var(--pink);
+      transform: translateX(2px);
+    }
+    .release-news .news-item .news-title {
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .release-news .news-item .news-title .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--bg);
+      background: var(--cyan);
+      padding: 2px 8px;
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+    }
+    .release-news .news-item .news-body {
+      color: var(--muted);
+      font-size: 0.93rem;
+      line-height: 1.6;
+    }
+    .release-news .news-empty {
+      color: var(--muted);
+      font-size: 0.95rem;
+      padding: 20px;
+      text-align: center;
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+    }
+
+    /* Install */
+    .install {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 36px;
+      margin: 36px 0 56px;
+    }
+    .install h2 { margin-bottom: 16px; }
+    .install h3 { margin-top: 22px; color: var(--accent); font-size: 1.1rem; }
+    .install ol {
+      padding-left: 24px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .install li { margin-bottom: 8px; }
+    .install code {
+      background: var(--bg);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.88rem;
+      color: var(--cyan);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 36px 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<!-- Floating language toggle -->
+<div class="lang-bar" role="group" aria-label="Language">
+  <button id="lang-ko" class="active" type="button">한국어</button>
+  <button id="lang-en" type="button">English</button>
+</div>
+
+<div class="container">
+
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <img class="hero-mascot"
+         src="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/illustrations/hero-mascot.png"
+         data-fallback="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/MultiCLI.png"
+         alt="AgentZero 마스코트">
+    <h1><span>AgentZero</span></h1>
+    <p data-ko="윈도우 데스크톱을 AI에게 맡기세요. 여러 CLI 터미널, AI 비서, 작업 자동화, 메모, 하네스 시각화를 한 앱에서."
+       data-en="Hand over your Windows desktop to AI. Multiple CLI terminals, AI assistants, automation, notes, and harness visualization — all in one app.">
+      윈도우 데스크톱을 AI에게 맡기세요. 여러 CLI 터미널, AI 비서, 작업 자동화, 메모, 하네스 시각화를 한 앱에서.
+    </p>
+
+    <a id="download-btn" class="btn-download"
+       href="https://github.com/psmon/agent-win/releases/latest"
+       data-ko="설치 파일 받기 (x64)"
+       data-en="Download Installer (x64)">
+      설치 파일 받기 (x64)
+    </a>
+    <div class="version-info">
+      <span id="version-text" data-ko="최신 릴리스" data-en="Latest release">최신 릴리스</span> &middot;
+      <a id="zip-link" href="https://github.com/psmon/agent-win/releases/latest"
+         data-ko="포터블 ZIP" data-en="Portable ZIP">포터블 ZIP</a> &middot;
+      <a href="https://github.com/psmon/agent-win/releases"
+         data-ko="모든 릴리스" data-en="All releases">모든 릴리스</a>
+    </div>
+  </section>
+
+  <!-- ===== 1. Multi-Workspace Terminal ===== -->
+  <section class="feature-section">
+    <h2 data-ko="여러 작업 공간, 여러 터미널" data-en="Multi-Workspace Terminal">여러 작업 공간, 여러 터미널</h2>
+    <p class="subtitle"
+       data-ko="여러 프로젝트와 여러 CLI 세션을 한 화면에서 나란히 다룰 수 있어요."
+       data-en="Manage multiple projects with multiple CLI sessions side by side.">
+      여러 프로젝트와 여러 CLI 세션을 한 화면에서 나란히 다룰 수 있어요.
+    </p>
+    <img src="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/illustrations/multi-terminal.png"
+         data-fallback="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/MultiCLI.png"
+         alt="여러 CLI 탭이 있는 멀티 워크스페이스 터미널">
+    <ul>
+      <li><strong data-ko="작업 공간 그룹" data-en="Workspace Groups">작업 공간 그룹</strong>
+        <span data-ko="— 사이드바에서 폴더를 별도의 작업 공간으로 묶을 수 있어요"
+              data-en="— organize directories as separate workspaces in the sidebar">— 사이드바에서 폴더를 별도의 작업 공간으로 묶을 수 있어요</span></li>
+      <li><strong data-ko="멀티탭 터미널" data-en="Multi-Tab Terminals">멀티탭 터미널</strong>
+        <span data-ko="— 작업 공간마다 Claude Code, PowerShell, CMD, WSL, Codex, Git Bash를 자유롭게"
+              data-en="— Claude Code, PowerShell, CMD, WSL, Codex, Git Bash per workspace">— 작업 공간마다 Claude Code, PowerShell, CMD, WSL, Codex, Git Bash를 자유롭게</span></li>
+      <li><strong data-ko="ConPTY 렌더러" data-en="ConPTY Renderer">ConPTY 렌더러</strong>
+        <span data-ko="— Windows Terminal 엔진 기반, 색깔·유니코드·커서 모두 정상 동작"
+              data-en="— full color, Unicode, and cursor support via Windows Terminal engine">— Windows Terminal 엔진 기반, 색깔·유니코드·커서 모두 정상 동작</span></li>
+      <li><strong data-ko="지연 초기화" data-en="Lazy Init">지연 초기화</strong>
+        <span data-ko="— 클릭한 탭만 실제로 터미널 프로세스를 띄워서 가벼워요"
+              data-en="— only the active tab spawns a terminal process">— 클릭한 탭만 실제로 터미널 프로세스를 띄워서 가벼워요</span></li>
+    </ul>
+  </section>
+
+  <!-- ===== 2. AgentBot ===== -->
+  <section class="feature-section">
+    <h2 data-ko="AgentBot — 채팅 중계와 AI 비서"
+        data-en="AgentBot — Chat Relay & AI Assistant">AgentBot — 채팅 중계와 AI 비서</h2>
+    <p class="subtitle"
+       data-ko="작은 채팅 창 하나로 터미널 입력·키 전달·AI 채팅을 모두 처리해요. 3가지 모드를 한 창에서."
+       data-en="A companion chat window with 3 modes: terminal chat, key forwarding, and AI chat.">
+      작은 채팅 창 하나로 터미널 입력·키 전달·AI 채팅을 모두 처리해요. 3가지 모드를 한 창에서.
+    </p>
+    <img src="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/illustrations/agentbot.png"
+         data-fallback="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/TeamsAuto.png"
+         alt="승인 감지 토스트와 터미널 중계가 있는 AgentBot">
+    <ul>
+      <li><strong>CHT</strong>
+        <span data-ko="— 활성 터미널에 글자를 그대로 보내요"
+              data-en="— send text directly to the active terminal">— 활성 터미널에 글자를 그대로 보내요</span></li>
+      <li><strong>KEY</strong>
+        <span data-ko="— 화살표·Esc·Tab·Ctrl 조합 같은 특수 키를 전달해요"
+              data-en="— forward special keys (arrows, Esc, Tab, Ctrl combos)">— 화살표·Esc·Tab·Ctrl 조합 같은 특수 키를 전달해요</span></li>
+      <li><strong>AI</strong>
+        <span data-ko="— Gemma·OpenAI 같은 LLM과 SSE 스트리밍으로 채팅"
+              data-en="— chat with configured LLM (Gemma, OpenAI) via SSE streaming">— Gemma·OpenAI 같은 LLM과 SSE 스트리밍으로 채팅</span></li>
+      <li><strong data-ko="승인 감지" data-en="Approval Watcher">승인 감지</strong>
+        <span data-ko="— Claude가 승인을 물어보면 자동으로 토스트를 띄워줘요"
+              data-en="— detects prompts and shows interactive approve/deny toast">— Claude가 승인을 물어보면 자동으로 토스트를 띄워줘요</span></li>
+      <li><strong data-ko="스킬 동기화" data-en="Skill Sync">스킬 동기화</strong>
+        <span data-ko="— Claude Code의 /skills 결과를 자동으로 가져와 슬래시 명령으로 만들어요"
+              data-en="— auto-parse slash commands from Claude Code's /skills output">— Claude Code의 /skills 결과를 자동으로 가져와 슬래시 명령으로 만들어요</span></li>
+      <li><strong data-ko="MD 첨부" data-en="MD Attachment">MD 첨부</strong>
+        <span data-ko="— 마크다운 파일을 최대 3개까지 AI 질의에 함께 보낼 수 있어요"
+              data-en="— attach up to 3 markdown files as AI query context">— 마크다운 파일을 최대 3개까지 AI 질의에 함께 보낼 수 있어요</span></li>
+    </ul>
+  </section>
+
+  <!-- ===== 3. CLI Automation & Multi-AI ===== -->
+  <section class="feature-section">
+    <h2 data-ko="CLI 자동화와 멀티 AI 연결"
+        data-en="CLI Automation & Multi-AI Orchestration">CLI 자동화와 멀티 AI 연결</h2>
+    <p class="subtitle"
+       data-ko="터미널을 코드로 제어하고, 여러 AI 에이전트를 터미널 입출력으로 이어 붙일 수 있어요."
+       data-en="Control terminals programmatically. Wire AI agents together through terminal I/O.">
+      터미널을 코드로 제어하고, 여러 AI 에이전트를 터미널 입출력으로 이어 붙일 수 있어요.
+    </p>
+    <div class="two-col">
+      <div>
+        <img src="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/illustrations/cli-automation.png"
+             data-fallback="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/C2T-T2B.png"
+             alt="CLI에서 터미널, 터미널에서 봇으로 이어지는 통신">
+        <ul>
+          <li><strong>terminal-list</strong>
+            <span data-ko="— 활성 세션 모두 찾기" data-en="— discover all active sessions">— 활성 세션 모두 찾기</span></li>
+          <li><strong>terminal-send</strong>
+            <span data-ko="— 어느 탭에든 명령 보내기" data-en="— send commands to any tab">— 어느 탭에든 명령 보내기</span></li>
+          <li><strong>terminal-read</strong>
+            <span data-ko="— 출력 캡처 (ANSI 코드 정리됨)" data-en="— capture output (ANSI stripped)">— 출력 캡처 (ANSI 코드 정리됨)</span></li>
+          <li><strong>bot-chat</strong>
+            <span data-ko="— AgentBot에 메시지 푸시" data-en="— push messages to AgentBot">— AgentBot에 메시지 푸시</span></li>
+        </ul>
+      </div>
+      <div>
+        <img src="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/illustrations/multi-ai-talktalk.png"
+             data-fallback="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/talktalk.png"
+             alt="Claude와 Codex가 서로 대화하는 멀티 AI 톡톡">
+        <ul>
+          <li><strong data-ko="AI ↔ AI 대화" data-en="AI-to-AI Chat">AI ↔ AI 대화</strong>
+            <span data-ko="— 서로 다른 AI CLI 사이에 메시지 라우팅"
+                  data-en="— route messages between different AI CLIs">— 서로 다른 AI CLI 사이에 메시지 라우팅</span></li>
+          <li><strong data-ko="크로스 모델" data-en="Cross-Model">크로스 모델</strong>
+            <span data-ko="— Claude ↔ Codex, Claude ↔ Gemma 가능"
+                  data-en="— Claude ↔ Codex, Claude ↔ Gemma">— Claude ↔ Codex, Claude ↔ Gemma 가능</span></li>
+          <li><strong data-ko="TUI 추상화" data-en="TUI Abstraction">TUI 추상화</strong>
+            <span data-ko="— terminal-key가 CLI 별 입력 차이를 자동으로 맞춰줘요"
+                  data-en="— terminal-key normalizes input across CLIs">— terminal-key가 CLI 별 입력 차이를 자동으로 맞춰줘요</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. Workspace Note ===== -->
+  <section class="feature-section">
+    <h2 data-ko="작업 공간 노트" data-en="Workspace Note">작업 공간 노트</h2>
+    <p class="subtitle"
+       data-ko="다른 도구를 띄우지 않고도 프로젝트 파일을 둘러보고 읽을 수 있어요."
+       data-en="Browse and view project files without leaving the tool.">
+      다른 도구를 띄우지 않고도 프로젝트 파일을 둘러보고 읽을 수 있어요.
+    </p>
+    <img src="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/illustrations/workspace-note.png"
+         data-fallback="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/Note.png"
+         alt="파일 트리와 마크다운 뷰어가 있는 작업 공간 노트">
+    <ul>
+      <li><strong data-ko="파일 트리" data-en="File Tree">파일 트리</strong>
+        <span data-ko="— .gitignore를 존중하는 폴더 탐색기"
+              data-en="— directory browser respecting .gitignore">— .gitignore를 존중하는 폴더 탐색기</span></li>
+      <li><strong data-ko="문서 뷰어" data-en="Document Viewer">문서 뷰어</strong>
+        <span data-ko="— 마크다운, 30+개 언어의 코드, 이미지, PDF 모두 보임"
+              data-en="— Markdown, code (30+ languages), images, PDF">— 마크다운, 30+개 언어의 코드, 이미지, PDF 모두 보임</span></li>
+      <li><strong data-ko="클립보드 기록" data-en="Clipboard History">클립보드 기록</strong>
+        <span data-ko="— 최근에 복사한 것들을 한 번에 다시 쓸 수 있어요"
+              data-en="— track recent copies with one-click reuse">— 최근에 복사한 것들을 한 번에 다시 쓸 수 있어요</span></li>
+    </ul>
+  </section>
+
+  <!-- ===== 5. Settings & Scrap ===== -->
+  <section class="feature-section">
+    <h2 data-ko="설정과 윈도우 스파이" data-en="Settings & Window Spy">설정과 윈도우 스파이</h2>
+    <p class="subtitle"
+       data-ko="터미널·LLM 공급자를 설정하고, 다른 윈도우의 글자를 캡처할 수 있어요."
+       data-en="Configure terminals, LLM providers, and capture text from any window.">
+      터미널·LLM 공급자를 설정하고, 다른 윈도우의 글자를 캡처할 수 있어요.
+    </p>
+    <img src="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/illustrations/settings-spy.png"
+         data-fallback="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/Agent-Scrap.png"
+         alt="설정 패널과 AgentScrap 윈도우 스파이">
+    <ul>
+      <li><strong data-ko="CLI 정의" data-en="CLI Definitions">CLI 정의</strong>
+        <span data-ko="— CMD, PowerShell, Claude, WSL 등 어떤 터미널이든 등록 가능"
+              data-en="— register any terminal (CMD, PowerShell, Claude, WSL, custom)">— CMD, PowerShell, Claude, WSL 등 어떤 터미널이든 등록 가능</span></li>
+      <li><strong data-ko="LLM 설정" data-en="LLM Config">LLM 설정</strong>
+        <span data-ko="— 공급자 선택(Webnori/Gemma, LM Studio, OpenAI), 모델 선택, 즉석 채팅 테스트"
+              data-en="— provider selection (Webnori/Gemma, LM Studio, OpenAI), model picker, chat test">— 공급자 선택(Webnori/Gemma, LM Studio, OpenAI), 모델 선택, 즉석 채팅 테스트</span></li>
+      <li><strong>AgentScrap</strong>
+        <span data-ko="— 십자선 드래그 캡처, 글자 추출, 요소 트리, 스크린샷"
+              data-en="— crosshair drag capture, text extraction, element tree, screenshot">— 십자선 드래그 캡처, 글자 추출, 요소 트리, 스크린샷</span></li>
+    </ul>
+  </section>
+
+  <!-- ===== 6. Harness ===== -->
+  <section class="feature-section">
+    <h2 data-ko="하네스 모니터와 AI 어시스트"
+        data-en="Harness Monitor & AI Assist">하네스 모니터와 AI 어시스트</h2>
+    <p class="subtitle"
+       data-ko="하네스 설정을 보기 좋게 펼쳐 보고, 내장 AI로 직접 분석할 수 있어요."
+       data-en="Visualize harness configurations and analyze them with built-in AI.">
+      하네스 설정을 보기 좋게 펼쳐 보고, 내장 AI로 직접 분석할 수 있어요.
+    </p>
+    <div class="two-col">
+      <div>
+        <img src="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/illustrations/harness-skill.png"
+             data-fallback="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/Write-A.png"
+             alt="하네스 스킬 매크로와 평가">
+      </div>
+      <div>
+        <img src="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/illustrations/harness-rubric.png"
+             data-fallback="https://raw.githubusercontent.com/psmon/agent-win/main/IMG/Write-B.png"
+             alt="하네스 채점 루브릭 뷰">
+      </div>
+    </div>
+    <ul>
+      <li><strong data-ko="적응형 스키마" data-en="Adaptive Schema">적응형 스키마</strong>
+        <span data-ko="— v1/v2 하네스 설정을 자동으로 인식해 모든 섹션을 보여줘요"
+              data-en="— auto-detect v1/v2 harness configs and render all sections">— v1/v2 하네스 설정을 자동으로 인식해 모든 섹션을 보여줘요</span></li>
+      <li><strong data-ko="펜슬 뷰어" data-en="Pencil Viewer">펜슬 뷰어</strong>
+        <span data-ko="— .pen 디자인 파일을 아키텍처 프레임으로 탐색할 수 있어요"
+              data-en="— render .pen design files as navigable architecture frames">— .pen 디자인 파일을 아키텍처 프레임으로 탐색할 수 있어요</span></li>
+      <li><strong data-ko="AI 어시스트 패널" data-en="AI Assist Panel">AI 어시스트 패널</strong>
+        <span data-ko="— 4가지 프리셋 질의 + LLM SSE 스트리밍 분석"
+              data-en="— 4 preset queries with SSE-streamed LLM analysis">— 4가지 프리셋 질의 + LLM SSE 스트리밍 분석</span></li>
+      <li><strong data-ko="스킬 매크로" data-en="Skill Macros">스킬 매크로</strong>
+        <span data-ko="— AgentBot에서 하네스 스킬을 동기화하고 실행"
+              data-en="— sync and execute harness skills from AgentBot">— AgentBot에서 하네스 스킬을 동기화하고 실행</span></li>
+    </ul>
+  </section>
+
+  <!-- ===== Quick Feature Cards ===== -->
+  <div class="features-grid">
+    <div class="fcard">
+      <h3 data-ko="데스크톱 자동화" data-en="Desktop Automation">데스크톱 자동화</h3>
+      <p data-ko="마우스 클릭, 키보드 입력, 글자 캡처, 스크린샷, UI 요소 검사 — Claude Code에서 CLI 스킬로 모두 호출 가능."
+         data-en="Mouse click, keyboard input, text capture, screenshots, and UI element inspection — all via CLI skill from Claude Code.">
+        마우스 클릭, 키보드 입력, 글자 캡처, 스크린샷, UI 요소 검사 — Claude Code에서 CLI 스킬로 모두 호출 가능.
+      </p>
+    </div>
+    <div class="fcard">
+      <h3 data-ko="IPC 파이프라인" data-en="IPC Pipeline">IPC 파이프라인</h3>
+      <p data-ko="WM_COPYDATA + 메모리 매핑 파일로 CLI↔GUI 통신. 보내고 잊거나 응답을 폴링할 수 있어요."
+         data-en="WM_COPYDATA + Memory-Mapped Files for CLI↔GUI communication. Fire-and-forget or poll-based response.">
+        WM_COPYDATA + 메모리 매핑 파일로 CLI↔GUI 통신. 보내고 잊거나 응답을 폴링할 수 있어요.
+      </p>
+    </div>
+    <div class="fcard">
+      <h3 data-ko="SQLite 영구 저장" data-en="SQLite Persistence">SQLite 영구 저장</h3>
+      <p data-ko="윈도우 상태, 작업 공간 그룹, 터미널 탭, 클립보드 기록, LLM 설정 — 모두 저장하고 시작 시 복원."
+         data-en="Window state, workspace groups, terminal tabs, clipboard history, and LLM settings — all persisted and restored on startup.">
+        윈도우 상태, 작업 공간 그룹, 터미널 탭, 클립보드 기록, LLM 설정 — 모두 저장하고 시작 시 복원.
+      </p>
+    </div>
+  </div>
+
+  <!-- ===== Recent Updates / Release News ===== -->
+  <section id="release-news" class="release-news">
+    <h2 data-ko="최근 업데이트" data-en="What's New">최근 업데이트</h2>
+    <p class="subtitle"
+       data-ko="개발 중에 새로 들어온 기능들을 사용자 관점에서 정리했어요."
+       data-en="A user-facing summary of features that recently landed in development.">
+      개발 중에 새로 들어온 기능들을 사용자 관점에서 정리했어요.
+    </p>
+    <div class="news-list">
+      <!-- RELEASE_NEWS_START — agent-deploy 스킬의 "릴리스 준비해" 동작이 이 마커 사이를 다시 채웁니다. -->
+      <div class="news-item">
+        <div class="news-title">
+          <span class="badge" data-ko="신규" data-en="NEW">신규</span>
+          <span data-ko="OS 제어 활성화 안내 — Claude가 혼자 윈도우를 조종"
+                data-en="OS Control enablement guide — let Claude drive Windows on its own">OS 제어 활성화 안내 — Claude가 혼자 윈도우를 조종</span>
+        </div>
+        <div class="news-body"
+             data-ko="온보딩 화면에 [Register PATH] 한 번 누르면 Claude Code가 마우스·키보드·스크린샷 같은 AgentZero 기능을 AgentBot 창 없이도 단독으로 호출할 수 있다는 안내 섹션이 추가됐어요."
+             data-en="A new onboarding section explains how clicking [Register PATH] once lets Claude Code call AgentZero's mouse, keyboard, and screenshot features standalone — without keeping the AgentBot window open.">
+          온보딩 화면에 [Register PATH] 한 번 누르면 Claude Code가 마우스·키보드·스크린샷 같은 AgentZero 기능을 AgentBot 창 없이도 단독으로 호출할 수 있다는 안내 섹션이 추가됐어요.
+        </div>
+      </div>
+
+      <div class="news-item">
+        <div class="news-title">
+          <span class="badge" data-ko="신규" data-en="NEW">신규</span>
+          <span data-ko="agent-zero 스킬 — 카카오톡 채팅 자동화"
+                data-en="agent-zero skill — KakaoTalk chat automation">agent-zero 스킬 — 카카오톡 채팅 자동화</span>
+        </div>
+        <div class="news-body"
+             data-ko="Claude가 agent-zero 스킬로 카카오톡 창을 열고 채팅을 자동화할 수 있어요. 반복되는 메시지 발송이나 채팅 확인 같은 단순 작업을 Claude가 대신 해 줍니다."
+             data-en="Claude can now use the agent-zero skill to open KakaoTalk and automate chats — repetitive message sends or chat checks can be handled by Claude.">
+          Claude가 agent-zero 스킬로 카카오톡 창을 열고 채팅을 자동화할 수 있어요. 반복되는 메시지 발송이나 채팅 확인 같은 단순 작업을 Claude가 대신 해 줍니다.
+        </div>
+      </div>
+
+      <div class="news-item">
+        <div class="news-title">
+          <span class="badge" data-ko="신규" data-en="NEW">신규</span>
+          <span data-ko="처음 사용자를 위한 온보딩 화면"
+                data-en="Onboarding screen for first-time users">처음 사용자를 위한 온보딩 화면</span>
+        </div>
+        <div class="news-body"
+             data-ko="앱을 처음 켜거나 새 버전을 설치하면 자동으로 안내 화면이 떠요. 자동 설치 체크리스트, Claude 첫 로그인 4단계, AgentBot 활용 팁이 한국어로 정리되어 있고 영어로도 볼 수 있어요."
+             data-en="A guided screen now appears the first time you launch the app (or after a version bump). It walks you through the auto-install checklist, the 4-step Claude login, and AgentBot tips — Korean by default, English with one click.">
+          앱을 처음 켜거나 새 버전을 설치하면 자동으로 안내 화면이 떠요. 자동 설치 체크리스트, Claude 첫 로그인 4단계, AgentBot 활용 팁이 한국어로 정리되어 있고 영어로도 볼 수 있어요.
+        </div>
+      </div>
+
+      <div class="news-item">
+        <div class="news-title">
+          <span class="badge" data-ko="신규" data-en="NEW">신규</span>
+          <span data-ko="기본 CLI 목록에 Claude 자동 추가"
+                data-en="Claude shell auto-added to default CLIs">기본 CLI 목록에 Claude 자동 추가</span>
+        </div>
+        <div class="news-body"
+             data-ko="설정의 CLI 정의 목록에 Claude가 기본으로 들어가 있어서, [+ CLI] 탭에서 클릭 한 번이면 Claude 터미널이 바로 떠요."
+             data-en="The Claude shell is now a built-in CLI definition out of the box — one click in the [+ CLI] tab and you're inside Claude.">
+          설정의 CLI 정의 목록에 Claude가 기본으로 들어가 있어서, [+ CLI] 탭에서 클릭 한 번이면 Claude 터미널이 바로 떠요.
+        </div>
+      </div>
+
+      <div class="news-item">
+        <div class="news-title">
+          <span class="badge" data-ko="신규" data-en="NEW">신규</span>
+          <span data-ko="하네스 모니터 — kakashi-harness v3 스키마 지원"
+                data-en="Harness Monitor — kakashi-harness v3 schema">하네스 모니터 — kakashi-harness v3 스키마 지원</span>
+        </div>
+        <div class="news-body"
+             data-ko="하네스 모니터가 새 v3 스키마를 자동으로 인식해서 모든 섹션을 보여줘요. 펜슬(.pen) 디자인 파일도 화면을 꽉 채워 보여주니, 아키텍처 다이어그램을 더 크게 한눈에 볼 수 있어요."
+             data-en="Harness Monitor now auto-detects the new v3 schema and renders all sections. Pencil (.pen) design files also fill the available space, so architecture diagrams are easier to take in at a glance.">
+          하네스 모니터가 새 v3 스키마를 자동으로 인식해서 모든 섹션을 보여줘요. 펜슬(.pen) 디자인 파일도 화면을 꽉 채워 보여주니, 아키텍처 다이어그램을 더 크게 한눈에 볼 수 있어요.
+        </div>
+      </div>
+
+      <div class="news-item">
+        <div class="news-title">
+          <span class="badge" data-ko="개선" data-en="UPDATED">개선</span>
+          <span data-ko="다크 테마 통일 — 스크롤바까지"
+                data-en="Unified dark theme — scrollbars included">다크 테마 통일 — 스크롤바까지</span>
+        </div>
+        <div class="news-body"
+             data-ko="모든 화면의 색감이 한 톤으로 정리됐어요. 그동안 살짝 튀던 스크롤바도 다크 테마에 맞게 바뀌어서 눈에 거슬리지 않아요."
+             data-en="All screens now share one consistent dark palette. The scrollbar — which used to look out of place — has been restyled to match the dark theme too.">
+          모든 화면의 색감이 한 톤으로 정리됐어요. 그동안 살짝 튀던 스크롤바도 다크 테마에 맞게 바뀌어서 눈에 거슬리지 않아요.
+        </div>
+      </div>
+      <!-- RELEASE_NEWS_END -->
+    </div>
+  </section>
+
+  <!-- ===== Install ===== -->
+  <section class="install">
+    <h2 data-ko="설치하기" data-en="Installation">설치하기</h2>
+    <h3 data-ko="설치 파일 (권장)" data-en="Installer (Recommended)">설치 파일 (권장)</h3>
+    <ol>
+      <li data-ko="위 버튼에서 AgentZero-vX.X.X-Setup.exe 를 받으세요"
+          data-en="Download AgentZero-vX.X.X-Setup.exe from the button above">위 버튼에서 <code>AgentZero-vX.X.X-Setup.exe</code> 를 받으세요</li>
+      <li data-ko="설치 파일을 실행하면 바탕화면 바로가기와 시작 메뉴 항목이 자동으로 생성돼요"
+          data-en="Run the installer — desktop shortcut and start menu entry are created automatically">설치 파일을 실행하면 바탕화면 바로가기와 시작 메뉴 항목이 자동으로 생성돼요</li>
+      <li data-ko="바탕화면이나 시작 메뉴에서 AgentZero를 실행하세요"
+          data-en="Launch AgentZero from the desktop or start menu">바탕화면이나 시작 메뉴에서 AgentZero를 실행하세요</li>
+    </ol>
+    <h3 data-ko="포터블 ZIP" data-en="Portable ZIP">포터블 ZIP</h3>
+    <ol>
+      <li data-ko="위의 '포터블 ZIP' 링크에서 ZIP을 받으세요"
+          data-en='Download the ZIP from the "Portable ZIP" link above'>위의 '포터블 ZIP' 링크에서 ZIP을 받으세요</li>
+      <li data-ko="원하는 위치에 압축을 풀어주세요 (예: C:\AgentZero)"
+          data-en="Extract to your preferred location (e.g., C:\AgentZero)">원하는 위치에 압축을 풀어주세요 (예: <code>C:\AgentZero</code>)</li>
+      <li data-ko="AgentZeroWpf.exe 를 실행하면 시작됩니다"
+          data-en="Run AgentZeroWpf.exe to start">  <code>AgentZeroWpf.exe</code> 를 실행하면 시작됩니다</li>
+    </ol>
+  </section>
+
+</div>
+
+<footer>
+  <p>
+    <a href="https://github.com/psmon/agent-win">GitHub</a> &middot;
+    <a href="https://github.com/psmon/agent-win/issues" data-ko="이슈" data-en="Issues">이슈</a> &middot;
+    <span data-ko="MIT 라이선스" data-en="MIT License">MIT 라이선스</span> &middot;
+    <span data-ko="만든이" data-en="Author">만든이</span>: <a href="mailto:psmon@live.co.kr">psmon@live.co.kr</a> &middot;
+    <a href="https://blumn.ai/">blumn.ai</a>
+  </p>
+</footer>
+
+<script>
+  // ----- Image fallback: try illustration first, fall back to original screenshot -----
+  document.querySelectorAll('img[data-fallback]').forEach(img => {
+    img.addEventListener('error', function handler() {
+      const fb = this.getAttribute('data-fallback');
+      if (fb && this.src !== fb) {
+        this.removeEventListener('error', handler);
+        this.src = fb;
+      }
+    });
+  });
+
+  // ----- Language toggle (default: ko, persisted in localStorage) -----
+  const LANG_KEY = 'agentzero_lang';
+  const btnKo = document.getElementById('lang-ko');
+  const btnEn = document.getElementById('lang-en');
+
+  function applyLang(lang) {
+    document.documentElement.lang = lang;
+    document.title = (lang === 'ko')
+      ? 'AgentZero — 윈도우 데스크톱 자동화 도구'
+      : 'AgentZero — Windows Desktop Automation';
+    document.querySelectorAll('[data-ko][data-en]').forEach(el => {
+      const text = el.getAttribute('data-' + lang);
+      if (text === null) return;
+      // Preserve nested <code> elements by only replacing text nodes when no <code> child exists
+      if (el.querySelector('code')) {
+        // For elements with <code>, swap innerHTML using a soft transform:
+        // we trust the data-* string to not contain dangerous markup.
+        el.innerHTML = text;
+      } else {
+        el.textContent = text;
+      }
+    });
+    btnKo.classList.toggle('active', lang === 'ko');
+    btnEn.classList.toggle('active', lang === 'en');
+  }
+
+  btnKo.addEventListener('click', () => { localStorage.setItem(LANG_KEY, 'ko'); applyLang('ko'); });
+  btnEn.addEventListener('click', () => { localStorage.setItem(LANG_KEY, 'en'); applyLang('en'); });
+
+  const saved = localStorage.getItem(LANG_KEY);
+  applyLang(saved === 'en' ? 'en' : 'ko');
+
+  // ----- GitHub Releases hook (unchanged) -----
+  fetch('https://api.github.com/repos/psmon/agent-win/releases/latest')
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(release => {
+      const setup = release.assets.find(a => a.name.endsWith('-Setup.exe'));
+      if (setup) document.getElementById('download-btn').href = setup.browser_download_url;
+      const zip = release.assets.find(a => a.name.endsWith('.zip'));
+      if (zip) document.getElementById('zip-link').href = zip.browser_download_url;
+      document.getElementById('version-text').textContent = release.tag_name;
+    })
+    .catch(() => {});
+</script>
+
+</body>
+</html>
