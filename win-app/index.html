@@ -298,7 +298,7 @@
     </p>
 
     <a id="download-btn" class="btn-download"
-       href="https://github.com/psmon/agent-win/releases/latest"
+       href="./setup/AgentZero-Setup.exe"
        data-ko="설치 파일 받기 (x64)"
        data-en="Download Installer (x64)">
       설치 파일 받기 (x64)
@@ -697,15 +697,11 @@
   const saved = localStorage.getItem(LANG_KEY);
   applyLang(saved === 'en' ? 'en' : 'ko');
 
-  // ----- GitHub Releases hook (unchanged) -----
-  fetch('https://api.github.com/repos/psmon/agent-win/releases/latest')
-    .then(r => r.ok ? r.json() : Promise.reject())
-    .then(release => {
-      const setup = release.assets.find(a => a.name.endsWith('-Setup.exe'));
-      if (setup) document.getElementById('download-btn').href = setup.browser_download_url;
-      const zip = release.assets.find(a => a.name.endsWith('.zip'));
-      if (zip) document.getElementById('zip-link').href = zip.browser_download_url;
-      document.getElementById('version-text').textContent = release.tag_name;
+  // ----- Local version hook (reads win-app/setup/version.txt) -----
+  fetch('./setup/version.txt')
+    .then(r => r.ok ? r.text() : Promise.reject())
+    .then(v => {
+      document.getElementById('version-text').textContent = 'v' + v.trim();
     })
     .catch(() => {});
 </script>
